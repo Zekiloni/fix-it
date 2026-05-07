@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import {
   CreateProblemDto,
+  IAttachment,
   IProblem,
   ProblemCategory,
   ProblemStatus,
@@ -135,6 +136,34 @@ export class ProblemsService {
     doc.assignee = new Types.ObjectId(assigneeId);
     await doc.save();
     return toProblem(doc);
+  }
+
+  async addAttachment(
+    id: string,
+    attachment: IAttachment,
+    actor: RequestActor,
+  ): Promise<IProblem> {
+    const doc = await this.loadOrThrow(id);
+    this.assertCanEdit(doc, actor);
+    doc.attachments.push(attachment);
+    await doc.save();
+    return toProblem(doc);
+  }
+
+  async removeAttachment(
+    id: string,
+    storageId: string,
+    actor: RequestActor,
+  ): Promise<{ problem: IProblem; removedStorageId: string | null }> {
+    const doc = await this.loadOrThrow(id);
+    this.assertCanEdit(doc, actor);
+    const before = doc.attachments.length;
+    doc.attachments = doc.attachments.filter((a) => a.storageId !== storageId);
+    if (doc.attachments.length === before) {
+      return { problem: toProblem(doc), removedStorageId: null };
+    }
+    await doc.save();
+    return { problem: toProblem(doc), removedStorageId: storageId };
   }
 
   async updateStatus(

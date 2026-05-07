@@ -3,6 +3,9 @@ import { IAttachment } from '@fix-it/shared';
 
 @Schema({ _id: false, timestamps: { createdAt: 'uploadedAt', updatedAt: false } })
 export class AttachmentSchemaClass implements Omit<IAttachment, 'uploadedAt'> {
+  @Prop({ required: true, index: true })
+  storageId!: string;
+
   @Prop({ required: true })
   url!: string;
 

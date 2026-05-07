@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { UsersModule } from '../users/users.module';
 import {
   Organization,
   OrganizationSchema,
@@ -12,6 +13,7 @@ import { OrganizationsService } from './organizations.service';
     MongooseModule.forFeature([
       { name: Organization.name, schema: OrganizationSchema },
     ]),
+    forwardRef(() => UsersModule),
   ],
   controllers: [OrganizationsController],
   providers: [OrganizationsService],

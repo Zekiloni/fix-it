@@ -1,8 +1,8 @@
 import { IAttachment, IProblem } from '@fix-it/shared';
-import { ProblemDocument } from '../schemas/problem.schema';
-import { AttachmentSchemaClass } from '../schemas/attachment.schema';
+import { AttachmentSchemaClass, ProblemDocument } from '../schemas';
 
 const toAttachment = (a: AttachmentSchemaClass): IAttachment => ({
+  storageId: a.storageId,
   url: a.url,
   mimeType: a.mimeType,
   sizeBytes: a.sizeBytes,
@@ -21,6 +21,7 @@ export const toProblem = (doc: ProblemDocument): IProblem => ({
     coordinates: [doc.location.coordinates[0], doc.location.coordinates[1]],
   },
   address: doc.address,
+  contactPhone: doc.contactPhone,
   attachments: (doc.attachments ?? []).map(toAttachment),
   authorId: doc.author.toString(),
   organizationId: doc.organization?.toString(),

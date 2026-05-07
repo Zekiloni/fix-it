@@ -8,6 +8,12 @@ export const createProblemSchema = z.object({
   category: z.nativeEnum(ProblemCategory),
   location: geoPointSchema,
   address: z.string().max(300).optional(),
+  contactPhone: z
+    .string()
+    .min(5)
+    .max(30)
+    .regex(/^[+0-9 ()\-]+$/, 'Invalid phone number')
+    .optional(),
 });
 
 export type CreateProblemDto = z.infer<typeof createProblemSchema>;

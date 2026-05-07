@@ -6,3 +6,4 @@ export * from './create-organization.dto';
 export * from './update-organization.dto';
 export * from './problem-actions.dto';
 export * from './auth.dto';
+export * from './user-actions.dto';

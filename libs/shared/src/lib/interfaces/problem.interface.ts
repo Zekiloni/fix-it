@@ -11,6 +11,7 @@ export interface IProblem {
   status: ProblemStatus;
   location: GeoPoint;
   address?: string;
+  contactPhone?: string;
   attachments: IAttachment[];
   authorId: string;
   organizationId?: string;

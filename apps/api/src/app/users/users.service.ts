@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -19,6 +21,7 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private readonly model: Model<UserDocument>,
+    @Inject(forwardRef(() => OrganizationsService))
     private readonly organizations: OrganizationsService,
   ) {}
 
@@ -74,6 +77,22 @@ export class UsersService {
     const doc = await this.model.findById(id, 'organization').lean().exec();
     if (!doc) throw new NotFoundException(`User ${id} not found`);
     return doc.organization ? doc.organization.toString() : null;
+  }
+
+  async findOperators(organizationId: string): Promise<IUser[]> {
+    const docs = await this.model
+      .find({
+        organization: new Types.ObjectId(organizationId),
+        role: UserRole.Operator,
+      })
+      .sort({ name: 1 })
+      .exec();
+    return docs.map(toUser);
+  }
+
+  async findAll(): Promise<IUser[]> {
+    const docs = await this.model.find().sort({ createdAt: -1 }).exec();
+    return docs.map(toUser);
   }
 
   async createWithPassword(input: {

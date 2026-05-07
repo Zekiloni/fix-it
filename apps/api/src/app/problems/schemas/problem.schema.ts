@@ -31,6 +31,7 @@ export class Problem
       | 'attachments'
     >
 {
+
   @Prop({ required: true, trim: true, minlength: 5, maxlength: 120 })
   title!: string;
 
@@ -59,6 +60,9 @@ export class Problem
 
   @Prop({ trim: true, maxlength: 300 })
   address?: string;
+
+  @Prop({ trim: true, maxlength: 30 })
+  contactPhone?: string;
 
   @Prop({ type: [AttachmentSchema], default: [] })
   attachments!: AttachmentSchemaClass[];

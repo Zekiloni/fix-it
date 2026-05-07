@@ -46,3 +46,11 @@ Thumbs.db
 # Next.js
 .next
 out
+
+# env
+.env
+.env.*
+!.env.example
+
+# uploads (local file storage)
+/uploads

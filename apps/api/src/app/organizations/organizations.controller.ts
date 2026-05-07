@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Patch,
   Post,
@@ -13,17 +15,23 @@ import {
   CreateOrganizationDto,
   createOrganizationSchema,
   IOrganization,
+  IUser,
   UpdateOrganizationDto,
   updateOrganizationSchema,
   UserRole,
 } from '@fix-it/shared';
 import { ZodValidationPipe } from '../common/pipes';
 import { Public, Roles } from '../auth/decorators';
+import { UsersService } from '../users/users.service';
 import { OrganizationsService } from './organizations.service';
 
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private readonly service: OrganizationsService) {}
+  constructor(
+    private readonly service: OrganizationsService,
+    @Inject(forwardRef(() => UsersService))
+    private readonly users: UsersService,
+  ) {}
 
   @Roles(UserRole.Admin)
   @Post()
@@ -44,6 +52,13 @@ export class OrganizationsController {
   @Get(':id')
   findOne(@Param('id') id: string): Promise<IOrganization> {
     return this.service.findOne(id);
+  }
+
+  @Roles(UserRole.Admin, UserRole.Operator)
+  @Get(':id/operators')
+  async listOperators(@Param('id') id: string): Promise<IUser[]> {
+    await this.service.findOne(id);
+    return this.users.findOperators(id);
   }
 
   @Roles(UserRole.Admin)

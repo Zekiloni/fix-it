@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module, Provider } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
@@ -10,6 +10,22 @@ import { JwtAuthGuard, RolesGuard } from './guards';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+
+const googleStrategyProvider: Provider = {
+  provide: GoogleStrategy,
+  inject: [ConfigService, AuthService],
+  useFactory: (config: ConfigService, auth: AuthService) => {
+    const clientId = config.get<string>('GOOGLE_CLIENT_ID');
+    const clientSecret = config.get<string>('GOOGLE_CLIENT_SECRET');
+    if (!clientId || !clientSecret) {
+      new Logger('AuthModule').warn(
+        'Google OAuth disabled — set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable.',
+      );
+      return null;
+    }
+    return new GoogleStrategy(config, auth);
+  },
+};
 
 @Module({
   imports: [
@@ -32,7 +48,7 @@ import { LocalStrategy } from './strategies/local.strategy';
     AuthService,
     JwtStrategy,
     LocalStrategy,
-    GoogleStrategy,
+    googleStrategyProvider,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

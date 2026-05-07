@@ -4,13 +4,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { FilesModule } from './files/files.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
 import { ProblemsModule } from './problems/problems.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['apps/api/.env', '.env'],
+    }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -21,6 +25,7 @@ import { ProblemsModule } from './problems/problems.module';
     OrganizationsModule,
     UsersModule,
     ProblemsModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

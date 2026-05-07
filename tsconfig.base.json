@@ -14,7 +14,8 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
-      "@fix-it/shared": ["./libs/shared/src/index.ts"]
+      "@fix-it/shared": ["./libs/shared/src/index.ts"],
+      "@fix-it/ui": ["./libs/ui-kit/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
