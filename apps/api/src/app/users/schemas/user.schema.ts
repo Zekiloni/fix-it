@@ -36,6 +36,9 @@ export class User
 
   @Prop({ unique: true, sparse: true, index: true })
   googleId?: string;
+
+  @Prop({ select: false })
+  passwordHash?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -52,6 +55,7 @@ UserSchema.set('toJSON', {
     delete r['_id'];
     delete r['organization'];
     delete r['googleId'];
+    delete r['passwordHash'];
     return r;
   },
 });
