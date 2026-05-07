@@ -15,14 +15,17 @@ import {
   IOrganization,
   UpdateOrganizationDto,
   updateOrganizationSchema,
+  UserRole,
 } from '@fix-it/shared';
 import { ZodValidationPipe } from '../common/pipes';
+import { Public, Roles } from '../auth/decorators';
 import { OrganizationsService } from './organizations.service';
 
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private readonly service: OrganizationsService) {}
 
+  @Roles(UserRole.Admin)
   @Post()
   create(
     @Body(new ZodValidationPipe(createOrganizationSchema))
@@ -31,16 +34,19 @@ export class OrganizationsController {
     return this.service.create(dto);
   }
 
+  @Public()
   @Get()
   findAll(): Promise<IOrganization[]> {
     return this.service.findAll();
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string): Promise<IOrganization> {
     return this.service.findOne(id);
   }
 
+  @Roles(UserRole.Admin)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -50,6 +56,7 @@ export class OrganizationsController {
     return this.service.update(id, dto);
   }
 
+  @Roles(UserRole.Admin)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string): Promise<void> {

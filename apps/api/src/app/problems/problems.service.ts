@@ -16,6 +16,7 @@ import {
 } from '@fix-it/shared';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { UsersService } from '../users/users.service';
+import { RequestActor } from '../common/request-actor';
 import { Problem, ProblemDocument } from './schemas/problem.schema';
 import { toProblem } from './mappers/problem.mapper';
 
@@ -32,11 +33,6 @@ export interface NearbyQuery {
   lat: number;
   radiusMeters: number;
   limit?: number;
-}
-
-interface ActorContext {
-  userId: string;
-  role: UserRole;
 }
 
 @Injectable()
@@ -92,7 +88,7 @@ export class ProblemsService {
   async update(
     id: string,
     dto: UpdateProblemDto,
-    actor: ActorContext,
+    actor: RequestActor,
   ): Promise<IProblem> {
     const doc = await this.loadOrThrow(id);
     this.assertCanEdit(doc, actor);
@@ -101,7 +97,7 @@ export class ProblemsService {
     return toProblem(doc);
   }
 
-  async remove(id: string, actor: ActorContext): Promise<void> {
+  async remove(id: string, actor: RequestActor): Promise<void> {
     const doc = await this.loadOrThrow(id);
     this.assertCanEdit(doc, actor);
     await doc.deleteOne();
@@ -144,7 +140,7 @@ export class ProblemsService {
   async updateStatus(
     id: string,
     status: ProblemStatus,
-    actor: ActorContext,
+    actor: RequestActor,
   ): Promise<IProblem> {
     const doc = await this.loadOrThrow(id);
     this.assertCanChangeStatus(doc, actor);
@@ -164,7 +160,7 @@ export class ProblemsService {
     return doc;
   }
 
-  private assertCanEdit(doc: ProblemDocument, actor: ActorContext): void {
+  private assertCanEdit(doc: ProblemDocument, actor: RequestActor): void {
     if (actor.role === UserRole.Admin) return;
     if (doc.author.toString() === actor.userId) return;
     throw new ForbiddenException('Only the author or an admin may modify this problem');
@@ -172,7 +168,7 @@ export class ProblemsService {
 
   private assertCanChangeStatus(
     doc: ProblemDocument,
-    actor: ActorContext,
+    actor: RequestActor,
   ): void {
     if (actor.role === UserRole.Admin) return;
     if (

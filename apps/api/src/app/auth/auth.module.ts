@@ -17,12 +17,13 @@ import { LocalStrategy } from './strategies/local.strategy';
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') ?? 'dev-only-secret-change-me',
-        signOptions: {
-          expiresIn: config.get<string>('JWT_EXPIRES_IN') ?? '7d',
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const expiresIn = config.get<string>('JWT_EXPIRES_IN') ?? '7d';
+        return {
+          secret: config.get<string>('JWT_SECRET') ?? 'dev-only-secret-change-me',
+          signOptions: { expiresIn: expiresIn as unknown as number },
+        };
+      },
     }),
     UsersModule,
   ],

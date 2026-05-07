@@ -10,7 +10,6 @@ import {
   Patch,
   Post,
   Query,
-  Req,
 } from '@nestjs/common';
 import {
   AssignProblemDto,
@@ -26,9 +25,11 @@ import {
   updateProblemSchema,
   UpdateProblemStatusDto,
   updateProblemStatusSchema,
+  UserRole,
 } from '@fix-it/shared';
 import { ZodValidationPipe } from '../common/pipes';
-import { requireActor } from '../common/request-actor';
+import { RequestActor } from '../common/request-actor';
+import { CurrentUser, Public, Roles } from '../auth/decorators';
 import { ProblemsService } from './problems.service';
 
 @Controller('problems')
@@ -38,12 +39,12 @@ export class ProblemsController {
   @Post()
   create(
     @Body(new ZodValidationPipe(createProblemSchema)) dto: CreateProblemDto,
-    @Req() req: Parameters<typeof requireActor>[0],
+    @CurrentUser() actor: RequestActor,
   ): Promise<IProblem> {
-    const actor = requireActor(req);
     return this.service.create(dto, actor.userId);
   }
 
+  @Public()
   @Get()
   findAll(
     @Query('status') status?: ProblemStatus,
@@ -61,6 +62,7 @@ export class ProblemsController {
     });
   }
 
+  @Public()
   @Get('nearby')
   findNearby(
     @Query('lng') lng: string,
@@ -82,6 +84,7 @@ export class ProblemsController {
     });
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string): Promise<IProblem> {
     return this.service.findOne(id);
@@ -91,20 +94,21 @@ export class ProblemsController {
   update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateProblemSchema)) dto: UpdateProblemDto,
-    @Req() req: Parameters<typeof requireActor>[0],
+    @CurrentUser() actor: RequestActor,
   ): Promise<IProblem> {
-    return this.service.update(id, dto, requireActor(req));
+    return this.service.update(id, dto, actor);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(
     @Param('id') id: string,
-    @Req() req: Parameters<typeof requireActor>[0],
+    @CurrentUser() actor: RequestActor,
   ): Promise<void> {
-    return this.service.remove(id, requireActor(req));
+    return this.service.remove(id, actor);
   }
 
+  @Roles(UserRole.Admin)
   @Patch(':id/route')
   route(
     @Param('id') id: string,
@@ -113,6 +117,7 @@ export class ProblemsController {
     return this.service.routeTo(id, dto.organizationId);
   }
 
+  @Roles(UserRole.Admin, UserRole.Operator)
   @Patch(':id/assign')
   assign(
     @Param('id') id: string,
@@ -121,13 +126,14 @@ export class ProblemsController {
     return this.service.assignTo(id, dto.assigneeId);
   }
 
+  @Roles(UserRole.Admin, UserRole.Operator)
   @Patch(':id/status')
   updateStatus(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateProblemStatusSchema))
     dto: UpdateProblemStatusDto,
-    @Req() req: Parameters<typeof requireActor>[0],
+    @CurrentUser() actor: RequestActor,
   ): Promise<IProblem> {
-    return this.service.updateStatus(id, dto.status, requireActor(req));
+    return this.service.updateStatus(id, dto.status, actor);
   }
 }
