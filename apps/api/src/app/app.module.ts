@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
 import { ProblemsModule } from './problems/problems.module';
@@ -16,6 +17,7 @@ import { ProblemsModule } from './problems/problems.module';
         uri: config.get<string>('MONGO_URI') ?? 'mongodb://localhost:27017/cityfix',
       }),
     }),
+    AuthModule,
     OrganizationsModule,
     UsersModule,
     ProblemsModule,
