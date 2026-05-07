@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from '@fix-it/ui';
 import { ReportProblemForm } from '../../../components/report-problem-form';
+import { createProblemAction } from '../../../lib/actions/problems';
 import { isAuthenticated } from '../../../lib/session';
 
 export const metadata = { title: 'Report a problem · CityFix' };
@@ -23,7 +24,7 @@ export default async function NewProblemPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ReportProblemForm />
+          <ReportProblemForm onSubmit={createProblemAction} />
         </CardContent>
       </Card>
     </div>

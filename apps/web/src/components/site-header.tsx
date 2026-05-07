@@ -20,9 +20,14 @@ export async function SiteHeader() {
           </Link>
           {(user?.role === UserRole.Operator ||
             user?.role === UserRole.Admin) && (
-            <Link href="/work" className="hover:text-foreground">
-              My work
-            </Link>
+            <>
+              <Link href="/board" className="hover:text-foreground">
+                Board
+              </Link>
+              <Link href="/work" className="hover:text-foreground">
+                My work
+              </Link>
+            </>
           )}
           {user?.role === UserRole.Admin && (
             <Link href="/admin" className="hover:text-foreground">

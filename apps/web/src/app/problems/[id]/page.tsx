@@ -16,6 +16,7 @@ import { getCurrentUser } from '../../../lib/session';
 import { AdminProblemControls } from '../../../components/admin-problem-controls';
 import { AttachmentGrid } from '../../../components/attachment-grid';
 import { AttachmentUploader } from '../../../components/attachment-uploader';
+import { ProblemActions } from '../../../components/problem-actions';
 import { ProblemDisplayMap } from '../../../components/problem-display-map';
 import { ProblemStatusBadge } from '../../../components/problem-status-badge';
 
@@ -63,7 +64,10 @@ export default async function ProblemDetailPage({
                 {problem.category} · reported {formattedDate}
               </CardDescription>
             </div>
-            <ProblemStatusBadge status={problem.status} />
+            <div className="flex flex-col items-end gap-2">
+              <ProblemStatusBadge status={problem.status} />
+              {canEdit && <ProblemActions problemId={problem.id} />}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

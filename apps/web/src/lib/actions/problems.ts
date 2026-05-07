@@ -6,7 +6,9 @@ import {
   CreateProblemDto,
   IProblem,
   ProblemStatus,
+  UpdateProblemDto,
   createProblemSchema,
+  updateProblemSchema,
 } from '@fix-it/shared';
 import { apiFetch, ApiError } from '../api-client';
 
@@ -84,4 +86,46 @@ export async function updateProblemStatusAction(
   status: ProblemStatus,
 ): Promise<ActionResult> {
   return patchProblem(problemId, '/status', { status });
+}
+
+export async function updateProblemAction(
+  problemId: string,
+  dto: UpdateProblemDto,
+): Promise<ActionResult> {
+  const parsed = updateProblemSchema.safeParse(dto);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join('; '),
+    };
+  }
+  try {
+    await apiFetch<IProblem>(`/problems/${problemId}`, {
+      method: 'PATCH',
+      json: parsed.data,
+    });
+  } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
+    throw err;
+  }
+  revalidatePath(`/problems/${problemId}`);
+  revalidatePath('/');
+  redirect(`/problems/${problemId}`);
+}
+
+export async function deleteProblemAction(
+  problemId: string,
+): Promise<ActionResult> {
+  try {
+    await apiFetch<undefined>(`/problems/${problemId}`, {
+      method: 'DELETE',
+    });
+  } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
+    throw err;
+  }
+  revalidatePath('/');
+  redirect('/');
 }
