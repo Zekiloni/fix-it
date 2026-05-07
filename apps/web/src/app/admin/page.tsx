@@ -42,11 +42,19 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Admin</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage users and organizations.
-        </p>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Admin</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage users and organizations.
+          </p>
+        </div>
+        <a
+          href="/admin/analytics"
+          className="text-sm font-medium underline-offset-4 hover:underline"
+        >
+          View analytics →
+        </a>
       </div>
 
       <Card>
@@ -110,8 +118,22 @@ export default async function AdminPage() {
                       {o.slug} · {o.contactEmail}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-1 text-xs text-muted-foreground capitalize">
-                    {o.categories.join(', ')}
+                  <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
+                    <span className="capitalize">
+                      {o.categories.join(', ')}
+                    </span>
+                    {o.customCategories.length > 0 && (
+                      <div className="flex flex-wrap justify-end gap-1">
+                        {o.customCategories.map((c) => (
+                          <span
+                            key={c}
+                            className="rounded-full bg-secondary px-2 py-0.5 text-[10px] text-secondary-foreground"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </li>
               ))}

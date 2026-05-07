@@ -4,6 +4,9 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — react-leaflet-cluster ships its own TS but pulls Marker types tightly
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import { type IProblem, ProblemStatus } from '@fix-it/shared';
 import { statusVisuals } from '../lib/status-colors';
 
@@ -83,26 +86,28 @@ export default function ProblemsMapClient({
         fallbackCenter={fallbackCenter}
         fallbackZoom={fallbackZoom}
       />
-      {problems.map((p) => {
-        const [lng, lat] = p.location.coordinates;
-        return (
-          <Marker key={p.id} position={[lat, lng]} icon={icons[p.status]}>
-            <Popup>
-              <div className="space-y-1">
-                <a
-                  href={`/problems/${p.id}`}
-                  className="block font-semibold underline-offset-4 hover:underline"
-                >
-                  {p.title}
-                </a>
-                <p className="text-xs text-gray-500 capitalize">
-                  {p.category} · {statusVisuals[p.status].label}
-                </p>
-              </div>
-            </Popup>
-          </Marker>
-        );
-      })}
+      <MarkerClusterGroup chunkedLoading>
+        {problems.map((p) => {
+          const [lng, lat] = p.location.coordinates;
+          return (
+            <Marker key={p.id} position={[lat, lng]} icon={icons[p.status]}>
+              <Popup>
+                <div className="space-y-1">
+                  <a
+                    href={`/problems/${p.id}`}
+                    className="block font-semibold underline-offset-4 hover:underline"
+                  >
+                    {p.title}
+                  </a>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {p.category} · {statusVisuals[p.status].label}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+      </MarkerClusterGroup>
     </MapContainer>
   );
 }

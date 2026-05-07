@@ -52,6 +52,9 @@ export default async function ProblemDetailPage({
 
   const [lng, lat] = problem.location.coordinates;
   const formattedDate = new Date(problem.createdAt).toLocaleString();
+  const resolvedAt = problem.resolvedAt
+    ? new Date(problem.resolvedAt).toLocaleString()
+    : null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-10">
@@ -62,6 +65,9 @@ export default async function ProblemDetailPage({
               <CardTitle className="text-2xl">{problem.title}</CardTitle>
               <CardDescription className="capitalize">
                 {problem.category} · reported {formattedDate}
+                {resolvedAt && (
+                  <span className="lowercase"> · resolved {resolvedAt}</span>
+                )}
               </CardDescription>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -74,6 +80,19 @@ export default async function ProblemDetailPage({
           <p className="whitespace-pre-line text-sm leading-relaxed">
             {problem.description}
           </p>
+
+          {problem.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {problem.tags.map((t) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs text-secondary-foreground"
+                >
+                  #{t}
+                </span>
+              ))}
+            </div>
+          )}
 
           <dl className="grid gap-3 sm:grid-cols-2 text-sm">
             {problem.address && (

@@ -13,6 +13,7 @@ export interface IProblem {
   address?: string;
   contactPhone?: string;
   attachments: IAttachment[];
+  tags: string[];
   authorId: string;
   organizationId?: string;
   assigneeId?: string;

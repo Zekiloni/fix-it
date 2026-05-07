@@ -8,6 +8,7 @@ export const toOrganization = (doc: OrganizationDocument): IOrganization => ({
   description: doc.description,
   contactEmail: doc.contactEmail,
   categories: doc.categories,
+  customCategories: doc.customCategories ?? [],
   createdAt: (doc as unknown as { createdAt: Date }).createdAt,
   updatedAt: (doc as unknown as { updatedAt: Date }).updatedAt,
 });

@@ -22,6 +22,7 @@ export const toProblem = (doc: ProblemDocument): IProblem => ({
   },
   address: doc.address,
   contactPhone: doc.contactPhone,
+  tags: doc.tags ?? [],
   attachments: (doc.attachments ?? []).map(toAttachment),
   authorId: doc.author.toString(),
   organizationId: doc.organization?.toString(),

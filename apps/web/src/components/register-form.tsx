@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useFormStatus } from 'react-dom';
 import { Button, Input, Label } from '@fix-it/ui';
 import { registerAction, type AuthFormState } from '../lib/actions/auth';
+import { GoogleSignInButton } from './google-sign-in-button';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -22,47 +23,58 @@ export function RegisterForm() {
   );
 
   return (
-    <form action={formAction} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <Input id="name" name="name" autoComplete="name" required />
-        {state?.fieldErrors?.['name'] && (
-          <p className="text-sm text-destructive">{state.fieldErrors['name']}</p>
-        )}
+    <div className="space-y-4">
+      <GoogleSignInButton label="Sign up with Google" />
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">or</span>
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
-        {state?.fieldErrors?.['email'] && (
-          <p className="text-sm text-destructive">{state.fieldErrors['email']}</p>
+      <form action={formAction} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Name</Label>
+          <Input id="name" name="name" autoComplete="name" required />
+          {state?.fieldErrors?.['name'] && (
+            <p className="text-sm text-destructive">{state.fieldErrors['name']}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" name="email" type="email" autoComplete="email" required />
+          {state?.fieldErrors?.['email'] && (
+            <p className="text-sm text-destructive">{state.fieldErrors['email']}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+          />
+          {state?.fieldErrors?.['password'] && (
+            <p className="text-sm text-destructive">{state.fieldErrors['password']}</p>
+          )}
+        </div>
+        {state?.error && (
+          <p className="text-sm text-destructive" role="alert">
+            {state.error}
+          </p>
         )}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-        />
-        {state?.fieldErrors?.['password'] && (
-          <p className="text-sm text-destructive">{state.fieldErrors['password']}</p>
-        )}
-      </div>
-      {state?.error && (
-        <p className="text-sm text-destructive" role="alert">
-          {state.error}
-        </p>
-      )}
-      <SubmitButton />
+        <SubmitButton />
+      </form>
       <p className="text-sm text-muted-foreground text-center">
         Already have an account?{' '}
         <Link href="/login" className="font-medium underline-offset-4 hover:underline">
           Sign in
         </Link>
       </p>
-    </form>
+    </div>
   );
 }

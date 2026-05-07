@@ -64,6 +64,9 @@ export class Problem
   @Prop({ trim: true, maxlength: 30 })
   contactPhone?: string;
 
+  @Prop({ type: [String], default: [], index: true })
+  tags!: string[];
+
   @Prop({ type: [AttachmentSchema], default: [] })
   attachments!: AttachmentSchemaClass[];
 

@@ -2,9 +2,16 @@ import { redirect } from 'next/navigation';
 import { type IProblem, UserRole } from '@fix-it/shared';
 import { ApiError, apiFetch } from '../../lib/api-client';
 import { getCurrentUser } from '../../lib/session';
+import { FilterChips } from '../../components/filter-chips';
 import { KanbanBoard } from '../../components/kanban-board';
+import { SearchBar } from '../../components/search-bar';
 
 export const metadata = { title: 'Board · CityFix' };
+
+interface BoardSearchParams {
+  category?: string;
+  q?: string;
+}
 
 async function loadProblems(query: string): Promise<IProblem[]> {
   try {
@@ -15,18 +22,26 @@ async function loadProblems(query: string): Promise<IProblem[]> {
   }
 }
 
-export default async function BoardPage() {
+interface BoardPageProps {
+  searchParams: Promise<BoardSearchParams>;
+}
+
+export default async function BoardPage({ searchParams }: BoardPageProps) {
   const me = await getCurrentUser();
   if (!me) redirect('/login');
   if (me.role !== UserRole.Admin && me.role !== UserRole.Operator) {
     redirect('/');
   }
 
-  const query =
-    me.role === UserRole.Operator && me.organizationId
-      ? `?organizationId=${me.organizationId}`
-      : '';
-  const problems = await loadProblems(query);
+  const params = await searchParams;
+  const qs = new URLSearchParams();
+  if (me.role === UserRole.Operator && me.organizationId) {
+    qs.set('organizationId', me.organizationId);
+  }
+  if (params.category) qs.set('category', params.category);
+  if (params.q) qs.set('q', params.q);
+  const queryString = qs.toString();
+  const problems = await loadProblems(queryString ? `?${queryString}` : '');
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-10">
@@ -37,6 +52,11 @@ export default async function BoardPage() {
             ? 'All reported problems across organizations.'
             : 'Problems routed to your organization. Drag a card to update status.'}
         </p>
+      </div>
+
+      <div className="space-y-4">
+        <SearchBar />
+        <FilterChips showStatus={false} />
       </div>
 
       <KanbanBoard initialProblems={problems} />

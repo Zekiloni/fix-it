@@ -4,3 +4,4 @@ export * from './attachment.interface';
 export * from './problem.interface';
 export * from './organization.interface';
 export * from './auth.interface';
+export * from './notification.interface';

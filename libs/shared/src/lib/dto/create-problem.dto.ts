@@ -14,6 +14,10 @@ export const createProblemSchema = z.object({
     .max(30)
     .regex(/^[+0-9 ()\-]+$/, 'Invalid phone number')
     .optional(),
+  tags: z
+    .array(z.string().trim().toLowerCase().min(1).max(40))
+    .max(10)
+    .optional(),
 });
 
 export type CreateProblemDto = z.infer<typeof createProblemSchema>;

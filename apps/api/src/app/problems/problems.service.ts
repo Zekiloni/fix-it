@@ -15,6 +15,7 @@ import {
   UpdateProblemDto,
   UserRole,
 } from '@fix-it/shared';
+import { NotificationsService } from '../notifications/notifications.service';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { UsersService } from '../users/users.service';
 import { RequestActor } from '../common/request-actor';
@@ -27,7 +28,11 @@ export interface ProblemFilter {
   organizationId?: string;
   authorId?: string;
   assigneeId?: string;
+  q?: string;
 }
+
+const escapeRegex = (s: string): string =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export interface NearbyQuery {
   lng: number;
@@ -43,6 +48,7 @@ export class ProblemsService {
     private readonly model: Model<ProblemDocument>,
     private readonly organizations: OrganizationsService,
     private readonly users: UsersService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateProblemDto, authorId: string): Promise<IProblem> {
@@ -61,6 +67,16 @@ export class ProblemsService {
     if (filter.authorId) query.author = new Types.ObjectId(filter.authorId);
     if (filter.assigneeId) query.assignee = new Types.ObjectId(filter.assigneeId);
 
+    const trimmed = filter.q?.trim();
+    if (trimmed) {
+      const pattern = new RegExp(escapeRegex(trimmed), 'i');
+      query.$or = [
+        { title: pattern },
+        { description: pattern },
+        { tags: pattern },
+      ];
+    }
+
     const docs = await this.model.find(query).sort({ createdAt: -1 }).exec();
     return docs.map(toProblem);
   }
@@ -78,6 +94,64 @@ export class ProblemsService {
       .limit(q.limit ?? 100)
       .exec();
     return docs.map(toProblem);
+  }
+
+  async stats(): Promise<{
+    total: number;
+    byStatus: Record<string, number>;
+    byCategory: Record<string, number>;
+    medianResolutionHours: number | null;
+  }> {
+    const [total, byStatusAgg, byCategoryAgg, resolved] = await Promise.all([
+      this.model.countDocuments().exec(),
+      this.model
+        .aggregate<{ _id: string; n: number }>([
+          { $group: { _id: '$status', n: { $sum: 1 } } },
+        ])
+        .exec(),
+      this.model
+        .aggregate<{ _id: string; n: number }>([
+          { $group: { _id: '$category', n: { $sum: 1 } } },
+        ])
+        .exec(),
+      this.model
+        .find(
+          { status: ProblemStatus.Resolved, resolvedAt: { $exists: true } },
+          'createdAt resolvedAt',
+        )
+        .lean()
+        .exec(),
+    ]);
+
+    const toRecord = (rows: { _id: string; n: number }[]) =>
+      Object.fromEntries(rows.map((r) => [r._id, r.n]));
+
+    let medianResolutionHours: number | null = null;
+    if (resolved.length > 0) {
+      const hours = resolved
+        .map((r) => {
+          const created = new Date(
+            (r as unknown as { createdAt: Date }).createdAt,
+          ).getTime();
+          const fixed = new Date(
+            (r as unknown as { resolvedAt: Date }).resolvedAt,
+          ).getTime();
+          return (fixed - created) / 3_600_000;
+        })
+        .sort((a, b) => a - b);
+      const mid = Math.floor(hours.length / 2);
+      medianResolutionHours =
+        hours.length % 2 === 0
+          ? (hours[mid - 1] + hours[mid]) / 2
+          : hours[mid];
+    }
+
+    return {
+      total,
+      byStatus: toRecord(byStatusAgg),
+      byCategory: toRecord(byCategoryAgg),
+      medianResolutionHours,
+    };
   }
 
   async findOne(id: string): Promise<IProblem> {
@@ -117,6 +191,13 @@ export class ProblemsService {
       )
       .exec();
     if (!doc) throw new NotFoundException(`Problem ${id} not found`);
+    await this.notifications.create({
+      recipientId: doc.author.toString(),
+      kind: 'problem_routed',
+      problemId: doc._id.toString(),
+      problemTitle: doc.title,
+      message: 'Your report was routed to an organization.',
+    });
     return toProblem(doc);
   }
 
@@ -135,6 +216,13 @@ export class ProblemsService {
     }
     doc.assignee = new Types.ObjectId(assigneeId);
     await doc.save();
+    await this.notifications.create({
+      recipientId: assigneeId,
+      kind: 'problem_assigned',
+      problemId: doc._id.toString(),
+      problemTitle: doc.title,
+      message: `You were assigned: ${doc.title}`,
+    });
     return toProblem(doc);
   }
 
@@ -173,6 +261,7 @@ export class ProblemsService {
   ): Promise<IProblem> {
     const doc = await this.loadOrThrow(id);
     this.assertCanChangeStatus(doc, actor);
+    const prev = doc.status;
     doc.status = status;
     if (status === ProblemStatus.Resolved) {
       doc.resolvedAt = new Date();
@@ -180,6 +269,15 @@ export class ProblemsService {
       doc.resolvedAt = undefined;
     }
     await doc.save();
+    if (prev !== status) {
+      await this.notifications.create({
+        recipientId: doc.author.toString(),
+        kind: 'problem_status_changed',
+        problemId: doc._id.toString(),
+        problemTitle: doc.title,
+        message: `Status changed: ${prev} → ${status}`,
+      });
+    }
     return toProblem(doc);
   }
 

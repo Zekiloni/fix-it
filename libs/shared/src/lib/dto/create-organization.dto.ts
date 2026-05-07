@@ -11,6 +11,10 @@ export const createOrganizationSchema = z.object({
   description: z.string().max(1000).optional(),
   contactEmail: z.string().email(),
   categories: z.array(z.nativeEnum(ProblemCategory)).min(1),
+  customCategories: z
+    .array(z.string().trim().min(1).max(60))
+    .max(20)
+    .optional(),
 });
 
 export type CreateOrganizationDto = z.infer<typeof createOrganizationSchema>;

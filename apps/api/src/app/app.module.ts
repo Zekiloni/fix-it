@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
 import { ProblemsModule } from './problems/problems.module';
@@ -24,6 +25,7 @@ import { ProblemsModule } from './problems/problems.module';
     AuthModule,
     OrganizationsModule,
     UsersModule,
+    NotificationsModule,
     ProblemsModule,
     FilesModule,
   ],

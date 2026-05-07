@@ -7,6 +7,7 @@ export interface IOrganization {
   description?: string;
   contactEmail: string;
   categories: ProblemCategory[];
+  customCategories: string[];
   createdAt: Date;
   updatedAt: Date;
 }

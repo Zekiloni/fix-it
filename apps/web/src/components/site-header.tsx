@@ -4,6 +4,7 @@ import { Button, buttonVariants, cn } from '@fix-it/ui';
 import { UserRole } from '@fix-it/shared';
 import { logoutAction } from '../lib/actions/auth';
 import { getCurrentUser } from '../lib/session';
+import { NotificationDot } from './notification-dot';
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
@@ -38,6 +39,7 @@ export async function SiteHeader() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              <NotificationDot />
               <span className="hidden text-sm text-muted-foreground sm:inline">
                 {user.name}
               </span>

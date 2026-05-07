@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
@@ -17,6 +17,8 @@ import {
 } from '@fix-it/shared';
 import { ProblemPickerMap, type PickedLocation } from './problem-picker-map';
 import { AddressSearchBar } from './address-search-bar';
+import { PhotoLocationExtractor } from './photo-location-extractor';
+import { TagInput } from './tag-input';
 import { reverseGeocode, shortAddress } from '../lib/geocoding';
 
 const DRAFT_KEY = 'cityfix:report-draft';
@@ -37,6 +39,7 @@ export interface ReportFormValues {
   category: ProblemCategory;
   address?: string;
   contactPhone?: string;
+  tags?: string[];
 }
 
 interface ReportDraft {
@@ -92,6 +95,7 @@ export function ReportProblemForm({
     getValues,
     watch,
     reset,
+    control,
     formState: { errors },
   } = useForm<ReportFormValues>({
     resolver: zodResolver(createProblemSchema.omit({ location: true })),
@@ -261,11 +265,33 @@ export function ReportProblemForm({
             <p className="text-sm text-destructive">{errors.address.message}</p>
           )}
         </div>
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label>Tags (optional)</Label>
+          <Controller
+            name="tags"
+            control={control}
+            render={({ field }) => (
+              <TagInput
+                value={field.value ?? []}
+                onChange={(tags) => field.onChange(tags)}
+              />
+            )}
+          />
+          {errors.tags && (
+            <p className="text-sm text-destructive">{errors.tags.message}</p>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
         <Label>Location</Label>
-        <AddressSearchBar onPick={onAddressSearch} />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex-1">
+            <AddressSearchBar onPick={onAddressSearch} />
+          </div>
+          <PhotoLocationExtractor onExtract={(loc) => setPicked(loc)} />
+        </div>
         <ProblemPickerMap value={picked} onChange={setPicked} />
       </div>
 

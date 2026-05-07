@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Input, Label, Textarea } from '@fix-it/ui';
 import {
@@ -10,6 +10,7 @@ import {
   createOrganizationSchema,
 } from '@fix-it/shared';
 import { createOrganizationAction } from '../lib/actions/organizations';
+import { TagInput } from './tag-input';
 
 const allCategories: ProblemCategory[] = Object.values(ProblemCategory);
 
@@ -21,6 +22,7 @@ export function CreateOrganizationForm() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<CreateOrganizationDto>({
     resolver: zodResolver(createOrganizationSchema),
@@ -92,6 +94,21 @@ export function CreateOrganizationForm() {
               {errors.categories.message}
             </p>
           )}
+        </div>
+        <div className="space-y-1 sm:col-span-2">
+          <Label>Custom subcategories (optional)</Label>
+          <Controller
+            name="customCategories"
+            control={control}
+            render={({ field }) => (
+              <TagInput
+                value={field.value ?? []}
+                onChange={(tags) => field.onChange(tags)}
+                placeholder="e.g. potholes, sidewalks"
+                max={20}
+              />
+            )}
+          />
         </div>
       </div>
       {serverError && (

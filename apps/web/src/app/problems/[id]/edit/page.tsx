@@ -60,6 +60,7 @@ export default async function EditProblemPage({ params }: EditProblemPageProps) 
               category: problem.category,
               address: problem.address,
               contactPhone: problem.contactPhone,
+              tags: problem.tags,
             }}
             initialPicked={{ lng, lat }}
             onSubmit={update}

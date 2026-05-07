@@ -34,6 +34,9 @@ export class Organization
     index: true,
   })
   categories!: ProblemCategory[];
+
+  @Prop({ type: [String], default: [] })
+  customCategories!: string[];
 }
 
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);

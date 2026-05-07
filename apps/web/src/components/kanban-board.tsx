@@ -28,6 +28,13 @@ function KanbanCard({ problem, isOverlay }: KanbanCardProps) {
     data: { problem },
   });
 
+  const days = Math.max(
+    0,
+    Math.floor(
+      (Date.now() - new Date(problem.createdAt).getTime()) / 86_400_000,
+    ),
+  );
+
   return (
     <div
       ref={setNodeRef}
@@ -48,6 +55,25 @@ function KanbanCard({ problem, isOverlay }: KanbanCardProps) {
         {problem.category}
         {problem.address ? ` · ${problem.address}` : ''}
       </p>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+        <span>{days === 0 ? 'today' : `${days}d`}</span>
+        {problem.attachments.length > 0 && (
+          <span>· {problem.attachments.length} file(s)</span>
+        )}
+        {problem.assigneeId && <span>· assigned</span>}
+      </div>
+      {problem.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {problem.tags.slice(0, 3).map((t) => (
+            <span
+              key={t}
+              className="inline-flex items-center rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-secondary-foreground"
+            >
+              #{t}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

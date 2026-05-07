@@ -6,8 +6,11 @@ import {
   HttpStatus,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
 import {
   IAuthResponse,
   IUser,
@@ -28,6 +31,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly users: UsersService,
+    private readonly config: ConfigService,
   ) {}
 
   @Public()
@@ -64,7 +68,14 @@ export class AuthController {
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
-  googleCallback(@Req() req: { user: IUser }): IAuthResponse {
-    return this.auth.issue(req.user);
+  googleCallback(
+    @Req() req: { user: IUser },
+    @Res() res: Response,
+  ): void {
+    const { accessToken } = this.auth.issue(req.user);
+    const webOrigin =
+      this.config.get<string>('WEB_ORIGIN') ?? 'http://localhost:3000';
+    const target = `${webOrigin}/auth/callback?token=${encodeURIComponent(accessToken)}`;
+    res.redirect(target);
   }
 }

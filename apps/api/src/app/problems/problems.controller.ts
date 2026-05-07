@@ -52,6 +52,7 @@ export class ProblemsController {
     @Query('organizationId') organizationId?: string,
     @Query('authorId') authorId?: string,
     @Query('assigneeId') assigneeId?: string,
+    @Query('q') q?: string,
   ): Promise<IProblem[]> {
     return this.service.findAll({
       status,
@@ -59,7 +60,14 @@ export class ProblemsController {
       organizationId,
       authorId,
       assigneeId,
+      q,
     });
+  }
+
+  @Roles(UserRole.Admin)
+  @Get('stats')
+  stats() {
+    return this.service.stats();
   }
 
   @Public()
