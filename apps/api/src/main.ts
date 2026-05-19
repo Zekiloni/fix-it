@@ -22,7 +22,7 @@ async function bootstrap() {
     : resolve(process.cwd(), uploadsDir);
   app.useStaticAssets(uploadsRoot, { prefix: '/uploads/' });
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.API_PORT || 8080;
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
